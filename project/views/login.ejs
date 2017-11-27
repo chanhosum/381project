@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/login.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="login-page">
+        <div class="form">
+            <%if (typeof fail != 'undefined') { %>
+            <% if(fail=="wrong"){ %>
+            <p>Sorry, wrong password.</p>
+            <% } else if(fail=="notExist"){ %>
+            <p>Account not exist.</p>
+            <% } %>
+            <% } %>
+            <form class="register-form" action="doCreate">
+                <input type="text" name="userName" placeholder="name" />
+                <input type="password" name="pw" placeholder="password" />
+                <button type="submit">create</button>
+                <p class="message">Already registered? <a href="#">Sign In</a></p>
+            </form>
+            <form class="login-form" action="doLogin">
+                <input type="text" name="userName" placeholder="username" />
+                <input type="password" name="pw" placeholder="password" />
+                <button type="submit">login</button>
+                <p class="message">Not registered? <a href="#" class="aClass">Create an account</a></p>
+            </form>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="/js/login.js"></script>
+</html>

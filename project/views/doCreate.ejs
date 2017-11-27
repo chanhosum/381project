@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/css/login.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="login-page">
+        <% if (okOrNot=="ok") { %>
+        <h1>Create Successful</h1>
+        <% }else if(okOrNot=="repeat"){ %>
+        <h1>Sorry, username is existed</h1>
+        <% }else{ %>
+        <h1>Username or password cannot be blank</h1>
+        <% } %>
+        <a href="/login">Click here return to login page</a>
+    </div>
+</body>
+</html>
