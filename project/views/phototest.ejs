@@ -19,10 +19,13 @@
             <%= p.name %>
          </h1>
       </center>
+       
+      <% if(p.image){ %>
       <img src="data:<%= p.image.mimetype %>;base64, <%= p.image %>">
+      <%}%>
    </div>
     <div class="w3-container">
-        <h2>EXIF Data</h2>
+     
         <h3>Borough:
             <%= p.borough%>
         </h3>
@@ -30,31 +33,37 @@
             <%= p.cuisine%>
         </h3>
         <h3>Street:
-            <%= p.street%>
+             <%if (p.address){%>
+            <%= p.address.street%>
+             <% }%>
         </h3>
         
         <h3>Building:
           <%if (p.address){%>
             <%= p.address.building%>
+            <% }%>
         </h3>
+
         <h3>Zipcode:
+            <%if (p.address){%>
             <%= p.address.zipcode%>
+            <%}%>
         </h3>
-        <% }%>
         <h3>Rating:
         <% if (p.grades){%>
         
-            <% for (i in p.grades.user.length){ %>
-                  <p><%i%>. + <%=p.grades.score%> +(+ <%=p.grades.user%>+)</p>
+            <% for (var i=0;i<p.grades.length;i++){ %>
+                  <p><%=i+1%>.  <%=p.grades[i].score%> ( <%=p.grades[i].user%> )</p>
           <%}%>
         <% }%>
         </h3>
         <h3>Created by
             <%= p.owner%>
         </h3>
-        <h3>GPS:
-        <% if (p.lat != -1 && p.lon != -1) { %>
+        <h3>GPS: </h3>
+        <% if (p.lat && p.lon) { %>
         <%=p.lon%>, <%=p.lat%>
+        <h3>
             <a href='https://www.google.com.hk/maps/@<%=p.lat%>,<%=p.lon%>,17z'>
                 google map
             </a>

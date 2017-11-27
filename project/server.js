@@ -130,6 +130,8 @@ app.post('/create', function(req,res) {
   console.log(lat+","+lon);
   var user = req.body.user;
   var score = req.body.score;
+
+
   if (!req.files.photoToUpload){
     req.files.photoToUpload ={};
     req.files.photoToUpload.name="no.jpg";
@@ -140,7 +142,6 @@ app.post('/create', function(req,res) {
   var name = (req.body.name.length > 0) ? req.body.name : "";
   var mimetype = (req.files.photoToUpload.mimetype > 0)? req.files.photoToUpload.mimetype:"";
   var filename = req.files.photoToUpload.name;
-  //var image = new Buffer(req.files.photoToUpload).toString('base64');
   
   var new_r ={};
   if (building||street||zipcode||lat||lon){
@@ -152,18 +153,36 @@ app.post('/create', function(req,res) {
         if (req.body.lan)address['lat'] = req.body.lat;
         new_r['address'] = address;
   }
-  if (user||score){
-        var grades = {};
-        if (req.body.user)grades['user'] = req.body.user;
-        if (req.body.score)grades['score'] = req.body.score;
-        new_r['grades'] = grades;
-  }
-  //console.log(uuid1);
-  
-  var image={};
-  image['image']=filename;
+    console.log("username ="+req.session.userName);
 
+        var grades = [];
+
+        if(req.body.score){
+        var grade = {};
+        grade['user'] = req.session.userName;
+        if (req.body.score)grade['score'] = req.body.score;
+        grades[0]=grade;
+        }
+
+        new_r['grades'] = grades;
   
+  
+      var image={};
+ 
+
+     new_r['restid'] = restid;
+      new_r['name'] = name;
+      new_r['borough'] = borough;
+      new_r['cuisine'] = cuisine;
+      new_r['mimetype'] = req.files.photoToUpload.mimetype;
+     console.log("mimetype ="+mimetype);
+      if (req.files.photoToUpload.mimetype){
+        new_r['image'] = new Buffer(req.files.photoToUpload.data).toString('base64');
+      }
+      new_r['lat']=lat;
+      new_r['lon']=lon;
+      new_r['owner'] = owner;
+
   
 
   
@@ -171,22 +190,10 @@ app.post('/create', function(req,res) {
     MongoClient.connect(mongourl, function(err, db){
       assert.equal(err, null);
       console.log('Connected to MongoDB');
-      new_r['restid'] = restid;
-      new_r['borough'] = borough;
-      new_r['cuisine'] = cuisine;
-      new_r['owner'] = owner;
-      new_r['name'] = name;
-      new_r['mimetype'] = req.files.photoToUpload.mimetype;
-      new_r['lat']=lat;
-      new_r['lon']=lon;
-      console.log("mimetype ="+mimetype);
-      if (req.files.photoToUpload.mimetype){
-        new_r['image'] = new Buffer(req.files.photoToUpload.data).toString('base64');
-      }
-      //console.log(data);
-      
-      console.log("aaaaa"+JSON.stringify(req.files));
-      //console.log('About to insert: ' + JSON.stringify(new_r));
+
+
+      console.log('About to insert: ' + JSON.stringify(new_r));
+
       insertdata(db, new_r, function(result){
           db.close();
           console.log('Disconnected MongoDB');
