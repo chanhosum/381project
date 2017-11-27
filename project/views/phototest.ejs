@@ -19,48 +19,47 @@
             <%= p.name %>
          </h1>
       </center>
-      <img src="data:<%= p.mimetype %>;base64, <%= p.image %>">
+      <img src="data:<%= p.image.mimetype %>;base64, <%= p.image %>">
    </div>
     <div class="w3-container">
         <h2>EXIF Data</h2>
-        <% if ('exif' in p && Object.keys(p.exif).length !== 0) { %>
-        <h3>Borough
+        <h3>Borough:
             <%= p.borough%>
         </h3>
-        <h3>Cuisine
+        <h3>Cuisine:
             <%= p.cuisine%>
         </h3>
-        <h3>Street
+        <h3>Street:
             <%= p.street%>
         </h3>
-        <h3>Building
+        
+        <h3>Building:
+          <%if (p.address){%>
             <%= p.address.building%>
         </h3>
-        <h3>Zipcode
+        <h3>Zipcode:
             <%= p.address.zipcode%>
         </h3>
+        <% }%>
+        <h3>Rating:
+        <% if (p.grades){%>
         
-        <h3>Rating
             <% for (i in p.grades.user.length){ %>
                   <p><%i%>. + <%=p.grades.score%> +(+ <%=p.grades.user%>+)</p>
           <%}%>
-            
+        <% }%>
         </h3>
         <h3>Created by
             <%= p.owner%>
         </h3>
-        <h3>Upload Date/Time:
-            <%= p.exif.exif.DateTimeOriginal %>
-        </h3>
-        <% if (lat != -1 && lon != -1) { %>
         <h3>GPS:
-            <a href='/map?lat=<%=lat%>&lon=<%=lon%>&p.name=<%=p.name%>'>
-                <%=lon%>, <%=lat%>
+        <% if (p.lat != -1 && p.lon != -1) { %>
+        <%=p.lon%>, <%=p.lat%>
+            <a href='https://www.google.com.hk/maps/@<%=p.lat%>,<%=p.lon%>,17z'>
+                google map
             </a>
         </h3>
         <% } %>
-        <% } else { %>
-        <h3>none</h3>
-        <% } %>
+        
     </div>
 </html>

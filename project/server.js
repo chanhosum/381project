@@ -8,7 +8,7 @@ var assert = require('assert');
 var ObjectID = require('mongodb').ObjectID;
 var fs = require('fs');
 var bodyParser = require('body-parser');
-var ExifImage = require('exif').ExifImage;
+
 
 var mongourl = "mongodb://anson:anson@ds243325.mlab.com:43325/anson";
 
@@ -124,7 +124,10 @@ app.post('/create', function(req,res) {
   var building = req.body.building;
   var street = req.body.street;
   var zipcode = req.body.zipcode;
-  var coord = req.body.coord;
+  
+  var lat = req.body.lat;
+  var lon = req.body.lon;
+  console.log(lat+","+lon);
   var user = req.body.user;
   var score = req.body.score;
   if (!req.files.photoToUpload){
@@ -140,12 +143,13 @@ app.post('/create', function(req,res) {
   //var image = new Buffer(req.files.photoToUpload).toString('base64');
   
   var new_r ={};
-  if (building||street||zipcode||coord){
+  if (building||street||zipcode||lat||lon){
         var address = {};
         if (req.body.building)address['building'] = req.body.building;
         if (req.body.street)address['street'] = req.body.street;
         if (req.body.zipcode)address['zipcode'] = req.body.zipcode;
-        if (req.body.coord)address['coord'] = req.body.coord;
+        if (req.body.lon)address['lon'] = req.body.lon;
+        if (req.body.lan)address['lat'] = req.body.lat;
         new_r['address'] = address;
   }
   if (user||score){
@@ -155,23 +159,11 @@ app.post('/create', function(req,res) {
         new_r['grades'] = grades;
   }
   //console.log(uuid1);
-  var exif={};
+  
   var image={};
   image['image']=filename;
 
-  try {
-    new ExifImage(image, function(error, exifData) {
-      if (error) {
-        console.log('ExifImage: ' + error.message);
-      }
-      else {
-        exif['image'] = exifData.image;
-        exif['exif'] = exifData.exif;
-        exif['gps'] = exifData.gps;
-        //console.log('Exif: ' + JSON.stringify(exif));
-      }
-    })
-  } catch (error) {}
+  
   
 
   
@@ -184,14 +176,15 @@ app.post('/create', function(req,res) {
       new_r['cuisine'] = cuisine;
       new_r['owner'] = owner;
       new_r['name'] = name;
-      new_r['mimetype'] = mimetype;
-
+      new_r['mimetype'] = req.files.photoToUpload.mimetype;
+      new_r['lat']=lat;
+      new_r['lon']=lon;
       console.log("mimetype ="+mimetype);
-      if (mimetype){
-        new_r['image'] = req.files.photoToUpload;
+      if (req.files.photoToUpload.mimetype){
+        new_r['image'] = new Buffer(req.files.photoToUpload.data).toString('base64');
       }
       //console.log(data);
-      new_r['exif'] = exif;
+      
       console.log("aaaaa"+JSON.stringify(req.files));
       //console.log('About to insert: ' + JSON.stringify(new_r));
       insertdata(db, new_r, function(result){
@@ -245,23 +238,9 @@ app.get('/display', function(req,res) {
       db.close();
       console.log('Disconnected MongoDB');
       console.log('Photo returned = ' + photo.length);
-      console.log('GPS = ' + JSON.stringify(photo[0].exif.gps));
-      var lat = -1;
-      var lon = -1;
-      if (photo[0].exif.gps &&
-          Object.keys(photo[0].exif.gps).length !== 0) {
-        var lat = gpsDecimal(
-          photo[0].exif.gps.GPSLatitudeRef,  // direction
-          photo[0].exif.gps.GPSLatitude[0],  // degrees
-          photo[0].exif.gps.GPSLatitude[1],  // minutes
-          photo[0].exif.gps.GPSLatitude[2]  // seconds
-        );
-        var lon = gpsDecimal(
-          photo[0].exif.gps.GPSLongitudeRef,
-          photo[0].exif.gps.GPSLongitude[0],
-          photo[0].exif.gps.GPSLongitude[1],
-          photo[0].exif.gps.GPSLongitude[2]
-        );
+      if (req.body.lat==""||req.body.lon==""){
+        var lat = -1;
+        var lon = -1;
       }
       console.log(lat,lon);      
       res.status(200);
@@ -270,15 +249,6 @@ app.get('/display', function(req,res) {
   });
 });
 
-app.get('/map', function(req,res) {
-  res.render('gmaptest.ejs',
-             {lat:req.query.lat,lon:req.query.lon,name:req.query.name});
-});
-
-function gpsDecimal(direction,degrees,minutes,seconds) {
-  var d = degrees + minutes / 60 + seconds / (60 * 60);
-  return (direction === 'S' || direction === 'W') ? d *= -1 : d;
-}
 
 
 function findPhoto(db,criteria,fields,callback) {
