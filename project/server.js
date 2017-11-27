@@ -1,4 +1,4 @@
-1var express = require('express');
+var express = require('express');
 var session = require('cookie-session');
 var app = express();
 app.set('view engine', 'ejs');
