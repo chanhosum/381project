@@ -1,0 +1,17 @@
+{
+  "name": "photos",
+  "description": "COMPS381F - Base64 Example",
+  "version": "1.0.0",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "ejs": "*",
+    "exif": "0.6",
+    "express": "*",
+    "express-fileupload": "latest",
+    "mongodb": "*"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engine": "*"
+}

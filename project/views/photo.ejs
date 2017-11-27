@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <style>
+      img {
+         width: 100%;
+         height: auto;
+      }
+   </style>
+</head>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<body>
+   <div class="w3-container w3-green">
+      <center>
+         <h1>
+            <%= p.title %>
+         </h1>
+      </center>
+      <img src="data:<%= p.mimetype %>;base64, <%= p.image %>">
+   </div>
+    <div class="w3-container">
+        <h2>EXIF Data</h2>
+        <% if ('exif' in p && Object.keys(p.exif).length !== 0) { %>
+        <h3>Make/Model:
+            <%= p.exif.image.Make %> /
+            <%= p.exif.image.Model %>
+        </h3>
+        <h3>Date/Time:
+            <%= p.exif.exif.DateTimeOriginal %>
+        </h3>
+        <% if (lat != -1 && lon != -1) { %>
+        <h3>GPS:
+            <a href='/map?lat=<%=lat%>&lon=<%=lon%>&title=<%=p.title%>'>
+                <%=lon%>, <%=lat%>
+            </a>
+        </h3>
+        <% } %>
+        <% } else { %>
+        <h3>none</h3>
+        <% } %>
+    </div>
+</html>

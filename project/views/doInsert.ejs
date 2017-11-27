@@ -1,0 +1,15 @@
+<!DOCTYPE html><html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body><div class="w3-container w3-green">    
+
+<% if (okOrNot=="ok") { %>
+        <h1>insert Successful</h1>
+        <% }else if(okOrNot=="repeat"){ %>
+        <h1>Sorry, data is existed</h1>
+        <% }else{ %>
+        <h1>name and owner cannot be blank</h1>
+        <% } %>
+        <a href="/login">Click here return to login page</a>
+</div></body></html>    
