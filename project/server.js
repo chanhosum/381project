@@ -7,6 +7,7 @@ var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectID = require('mongodb').ObjectID;
 var fs = require('fs');
+var bodyParser = require('body-parser');
 
 var mongourl = "mongodb://anson:anson@ds243325.mlab.com:43325/anson";
 
@@ -19,6 +20,7 @@ app.use(session({
 }));
 app.use(express.static(__dirname + '/public'));
 app.use(fileUpload());
+app.use(bodyParser.json());
 
 app.listen(process.env.PORT || 8099);
 
@@ -97,6 +99,11 @@ app.get('/logout', function(req, res) {
     console.log("clear session");
     console.log(req.session);
     res.redirect('/login');
+});
+
+app.post('/api/restaurant/create', function(req, res) {
+    console.log("/api/restaurant/create");
+    console.log(req.body.username);
 });
 
 function createAccount(db, userName, pw, callback) {
