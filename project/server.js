@@ -1,4 +1,4 @@
-var express = require('express');
+1var express = require('express');
 var session = require('cookie-session');
 var app = express();
 app.set('view engine', 'ejs');
@@ -10,7 +10,7 @@ var fs = require('fs');
 
 var mongourl = "mongodb://anson:anson@ds243325.mlab.com:43325/anson";
 
-var SECRETKEY1 = 'vvvv';
+var SECRETKEY1 = 'vvvv1';
 var SECRETKEY2 = 'vvvv2';
 
 app.use(session({
