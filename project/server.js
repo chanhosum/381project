@@ -211,11 +211,7 @@ app.get('/rate', function(req,res) {
 
 app.post('/rating', function(req,res) {
   console.log("/rating");
-      MongoClient.connect(mongourl, function(err, db){
-      assert.equal(err, null);
-      console.log('Connected to MongoDB');
-
-      var criteria = {};
+        var criteria = {};
       criteria['_id'] = ObjectID(req.query._id);
       console.log(criteria);
 
@@ -225,10 +221,62 @@ app.post('/rating', function(req,res) {
 
       console.log(req.body.score.match(re));
 
+      //Check the user rated or not
+
+      MongoClient.connect(mongourl, function(err, db){
+      assert.equal(err, null);
+      console.log('Connected to MongoDB');
+
+
+      var ranked_before = 0;
+
+      findPhoto(db,criteria,{_id:1,grades:1},function(result) {
+      console.log("grades ="+JSON.stringify(result[0].grades));
+
+      for(i in result[0].grades){
+          console.log("The user made comment already "+result[0].grades[i].user);
+          console.log("==================="+req.session.userName);
+          if(result[0].grades[i].user==req.session.userName){
+              ranked_before = 1;
+          }
+      }  
+    
+     console.log("ranked_before= "+ranked_before);
+
+
+
+
       if(!req.body.score.match(re)){
-          res.send('nonono');
+          res.writeHead(200, {'Content-Type': 'text/html'});
+          res.write("<html><head>");
+          res.write("<title>Error</title>");
+          res.write("</head>");
+          res.write("<body>");
+          res.write("<H1>score > 0 and score <= 10</H1>");
+          res.write("<a href='/read'><button>Home</button></a>");
+          res.write("</body>")
+          res.end("</html>");
+          db.close();
+          console.log('Disconnected MongoDB');
+
+
       }
-        else{
+        else if(ranked_before){
+          res.writeHead(200, {'Content-Type': 'text/html'});
+          res.write("<html><head>");
+          res.write("<title>Error</title>");
+          res.write("</head>");
+          res.write("<body>");
+          res.write("<H1>You have already rated</H1>");
+          res.write("<a href='/read'><button>Home</button></a>");
+          res.write("</body>")
+          res.end("</html>");
+          db.close();
+          console.log('Disconnected MongoDB');
+        }
+
+
+            else{
 
 
 
@@ -237,13 +285,22 @@ app.post('/rating', function(req,res) {
           db.close();
           console.log('Disconnected MongoDB');
 
-          res.status(200);
-          res.redirect('/read')
+                    res.writeHead(200, {'Content-Type': 'text/html'});
+          res.write("<html><head>");
+          res.write("<title>Success</title>");
+          res.write("</head>");
+          res.write("<body>");
+          res.write("<H1>Success</H1>");
+          res.write("<a href='/read'><button>Home</button></a>");
+          res.write("</body>")
+          res.end("</html>");
 
 
       });
         }
-    });
+
+        })
+    });//end mongo
 
 
   
@@ -330,6 +387,8 @@ function findPhoto(db,criteria,fields,callback) {
     }
   });
 }
+
+
 ////////////////////
 function insertdata(db,r,callback) {
  
@@ -421,3 +480,4 @@ function rating(db, criteria, user_given, score_given, callback) {
 
         });
 }
+
