@@ -86,10 +86,23 @@ app.get('/read', function(req, res) {
     if (!sessionn) {
         res.redirect('/login');
     } else {
+          MongoClient.connect(mongourl, function(err,db) {
+        assert.equal(err,null);
+        console.log('Connected to MongoDB');
+        findPhoto(db,{},{_id:1,name:1},function(result) {
+        db.close();
+        console.log('Disconnected MongoDB');
         console.log("session");
         console.log(req.session);
         res.status(200);
-        res.render("read", { userName: req.session.userName });
+        res.render("read", { 
+            userName: req.session.userName,
+            p:result
+
+        });
+
+        })
+        });
     }
 });
 
@@ -115,104 +128,126 @@ app.get('/insert', function(req,res) {
 });
 
 
-app.post('/create', function(req,res) {
-  console.log("/create");
-  var restid = req.body.restid;
-  var borough = req.body.borough;
-  var cuisine = req.body.cuisine;
+app.post('/create', function(req, res) {
+    console.log("/create");
+    var borough = req.body.borough;
+    var cuisine = req.body.cuisine;
+    var building = req.body.building;
+    var street = req.body.street;
+    var zipcode = req.body.zipcode;
+    var lat = req.body.lat;
+    var lon = req.body.lon;
+    console.log(lat + "," + lon);
+    if (!req.files.photoToUpload) {
+        req.files.photoToUpload = {};
+        req.files.photoToUpload.name = "no.jpg";
+        console.log("No picture");
+    }
 
-  var building = req.body.building;
-  var street = req.body.street;
-  var zipcode = req.body.zipcode;
-  
-  var lat = req.body.lat;
-  var lon = req.body.lon;
-  console.log(lat+","+lon);
-  var user = req.body.user;
-  var score = req.body.score;
-
-
-  if (!req.files.photoToUpload){
-    req.files.photoToUpload ={};
-    req.files.photoToUpload.name="no.jpg";
-    console.log("No picture");
-  }
-  
-  var owner = (req.body.owner.length > 0) ? req.body.owner : "";
-  var name = (req.body.name.length > 0) ? req.body.name : "";
-  var mimetype = (req.files.photoToUpload.mimetype > 0)? req.files.photoToUpload.mimetype:"";
-  var filename = req.files.photoToUpload.name;
-  
-  var new_r ={};
-  if (building||street||zipcode||lat||lon){
+    var name = (req.body.name.length > 0) ? req.body.name : "";
+    var mimetype = (req.files.photoToUpload.mimetype > 0) ? req.files.photoToUpload.mimetype : "";
+    var filename = req.files.photoToUpload.name;
+    var new_r = {};
+    if (building || street || zipcode || lat || lon) {
         var address = {};
-        if (req.body.building)address['building'] = req.body.building;
-        if (req.body.street)address['street'] = req.body.street;
-        if (req.body.zipcode)address['zipcode'] = req.body.zipcode;
-        if (req.body.lon)address['lon'] = req.body.lon;
-        if (req.body.lan)address['lat'] = req.body.lat;
+        if (req.body.building) address['building'] = req.body.building;
+        if (req.body.street) address['street'] = req.body.street;
+        if (req.body.zipcode) address['zipcode'] = req.body.zipcode;
+        if (req.body.lon) address['lon'] = req.body.lon;
+        if (req.body.lan) address['lat'] = req.body.lat;
         new_r['address'] = address;
-  }
-    console.log("username ="+req.session.userName);
+    }
+    console.log("username =" + req.session.userName);
 
-        var grades = [];
+    var grades = [];
+    new_r['grades'] = grades;
 
-        if(req.body.score){
-        var grade = {};
-        grade['user'] = req.session.userName;
-        if (req.body.score)grade['score'] = req.body.score;
-        grades[0]=grade;
-        }
-
-        new_r['grades'] = grades;
-  
-  
-      var image={};
- 
-
-     new_r['restid'] = restid;
-      new_r['name'] = name;
-      new_r['borough'] = borough;
-      new_r['cuisine'] = cuisine;
-      new_r['mimetype'] = req.files.photoToUpload.mimetype;
-     console.log("mimetype ="+mimetype);
-      if (req.files.photoToUpload.mimetype){
+    var image = {};
+    new_r['name'] = name;
+    new_r['borough'] = borough;
+    new_r['cuisine'] = cuisine;
+    new_r['mimetype'] = req.files.photoToUpload.mimetype;
+    console.log("mimetype =" + mimetype);
+    if (req.files.photoToUpload.mimetype) {
         new_r['image'] = new Buffer(req.files.photoToUpload.data).toString('base64');
-      }
-      new_r['lat']=lat;
-      new_r['lon']=lon;
-      new_r['owner'] = owner;
+    }
+    new_r['lat'] = lat;
+    new_r['lon'] = lon;
+    new_r['owner'] = req.session.userName;
 
-  
 
-  
+    MongoClient.connect(mongourl, function(err, db) {
+        assert.equal(err, null);
+        console.log('Connected to MongoDB');
+        console.log('About to insert: ' + JSON.stringify(new_r));
+        insertdata(db, new_r, function(result) {
+            db.close();
+            console.log('Disconnected MongoDB');
+            res.status(200);
+            res.render("doInsert", {
+                okOrNot: result
+            });
+            if (result != "ok") {
+                res.status(200);
+                console.log("fail");
+                //res.redirect('/login');
+            } else {
+                res.status(200);
+                console.log("success");
+                //res.redirect('/insert');
+            }
+        });
+    });
+});
 
-    MongoClient.connect(mongourl, function(err, db){
+app.get('/rate', function(req,res) {
+  console.log('/rate');
+      res.status(200);
+      res.render("rating",{
+          _id : req.query._id
+                 
+      });
+  });
+
+app.post('/rating', function(req,res) {
+  console.log("/rating");
+      MongoClient.connect(mongourl, function(err, db){
       assert.equal(err, null);
       console.log('Connected to MongoDB');
 
+      var criteria = {};
+      criteria['_id'] = ObjectID(req.query._id);
+      console.log(criteria);
 
-      console.log('About to insert: ' + JSON.stringify(new_r));
+      console.log("score="+req.body.score);
 
-      insertdata(db, new_r, function(result){
+      var re = /^([1-9]|10)$/;
+
+      console.log(req.body.score.match(re));
+
+      if(!req.body.score.match(re)){
+          res.send('nonono');
+      }
+        else{
+
+
+
+
+      rating(db,criteria,req.session.userName,req.body.score, function(result){
           db.close();
           console.log('Disconnected MongoDB');
+
           res.status(200);
-          res.render("doInsert", { okOrNot: result });      
-          if (result != "ok"){
-            res.status(200);
-            console.log("fail");
-            //res.redirect('/login');
-          }else{
-            res.status(200);
-            console.log("success");
-            //res.redirect('/insert');
-          }
+          res.redirect('/read')
+
+
       });
+        }
     });
+
+
   
 });
-
 
 
 
@@ -241,6 +276,7 @@ app.get('/display', function(req,res) {
     console.log('Connected to MongoDB');
     var criteria = {};
     criteria['_id'] = ObjectID(req.query._id);
+    console.log(criteria)
     findPhoto(db,criteria,{},function(photo) {
       db.close();
       console.log('Disconnected MongoDB');
@@ -254,6 +290,30 @@ app.get('/display', function(req,res) {
       res.render("phototest",{p:photo[0],lat:lat,lon:lon});
     });
   });
+});
+
+app.get('/delete', function(req, res) {
+    var criteria = {};
+    criteria['_id'] = ObjectID(req.query._id);
+    console.log(criteria)
+   MongoClient.connect(mongourl, function(err,db) {
+    assert.equal(err,null);
+    console.log('Connected to MongoDB');
+    db.collection('restaurants').findOne(criteria, function(err,result){
+      console.log(result);
+       if(result.owner==req.session.userName){
+    db.collection('restaurants').remove(criteria, function(err){
+        if (err) {
+            console.log(err)
+        }
+        else {
+           return res.send("Removed");
+        }
+    });
+       }
+else{return res.send("You are not the creater");}
+     });
+      });
 });
 
 
@@ -343,4 +403,21 @@ function login(db, userName, pw, callback) {
             callback("notExist");
         }
     });
+}
+
+function rating(db, criteria, user_given, score_given, callback) {
+    db.collection('restaurants').updateOne(
+        criteria, {
+            $push: {
+                grades: {
+                    user: user_given,
+                    score: score_given
+                }
+            }
+        },
+        function(err, results) {
+            console.log(results);
+            callback();
+
+        });
 }

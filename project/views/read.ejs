@@ -10,7 +10,13 @@
     <div>
         <h1>Restaurants</h1>
         <h2>User: <%=userName%></h2>
-        <h2>Showing 121 documents</h2>
+
+<H2>Showing <%= p.length %> document(s)</H2> 
+<ol> 
+<% for (var i in p) { %>
+  <li><a href='/display?_id=<%= p[i]._id %>'><%= p[i].name %></a></li> 
+<% } %>
+</ol> 
     </div>
     <div>
         <a href ="/insert"><button>Create new restaurant</button></a>
