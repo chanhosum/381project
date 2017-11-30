@@ -115,11 +115,55 @@ app.get('/logout', function(req, res) {
     res.redirect('/login');
 });
 
+
 app.post('/api/restaurant/create', function(req, res) {
     console.log("/api/restaurant/create");
     console.log(req.body.username);
-});
+    res.setHeader('Content-Type', 'application/json');
+    if (!req.body.name || !req.body.owner) {
+        res.json({ status: "failed" });
+    } else {
+        MongoClient.connect(mongourl, function(err, db) {
+            assert.equal(err, null);
+            console.log('Connected to MongoDB');
+            console.log(JSON.stringify(req.body));
+            insertdata(db, req.body, function(result) {
+                console.log('Disconnected MongoDB');
+                if (result != "ok") {
+                    console.log("fail");
+                    res.json({ status: "failed" });
+                    //res.redirect('/login');
+                } else {
+                    finddata(db, { name: req.body.name }, {}, function(result) {
+                        db.close();
+                        console.log(result);
+                        res.json({ status: "ok", _id: result._id });
+                    })
+                    //res.redirect('/insert');
+                }
+            });
+        });
 
+    }
+});
+app.get('/api/restaurant/read/:criteria/:value', function(req, res) {
+    console.log("/api/restaurant/read");
+    console.log(req.params);
+    MongoClient.connect(mongourl, function(err, db) {
+        var cri = {};
+        cri[req.params.criteria] = req.params.value
+        findPhoto(db, cri, {}, function(result) {
+            db.close();
+            console.log(result);
+            res.setHeader('Content-Type', 'application/json');
+            if (result.length == 0) {
+                res.json({});
+            } else {
+                res.json(result);
+            }
+        })
+    });
+});
 //-----------------------------------
 app.get('/insert', function(req,res) {
   console.log("/insert");
