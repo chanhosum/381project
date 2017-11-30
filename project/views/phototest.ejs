@@ -64,7 +64,7 @@
         <% if (p.address.lat && p.address.lon) { %>
         <%=p.address.lon%>, <%=p.address.lat%>
         <h3>
-            <a href='https://www.google.com.hk/maps/@<%=p.address.lat%>,<%=p.address.lon%>,17z'>
+            <a href='https://www.google.com.hk/maps/search/?api=1&query=<%=p.address.lat%>,<%=p.address.lon%>'>
                 google map
             </a>
         </h3>

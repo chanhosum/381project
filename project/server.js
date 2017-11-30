@@ -86,22 +86,22 @@ app.get('/read', function(req, res) {
     if (!sessionn) {
         res.redirect('/login');
     } else {
-          MongoClient.connect(mongourl, function(err,db) {
-        assert.equal(err,null);
-        console.log('Connected to MongoDB');
-        findPhoto(db,{},{_id:1,name:1},function(result) {
-        db.close();
-        console.log('Disconnected MongoDB');
-        console.log("session");
-        console.log(req.session);
-        res.status(200);
-        res.render("read", { 
-            userName: req.session.userName,
-            p:result
+        MongoClient.connect(mongourl, function(err,db) {
+          assert.equal(err,null);
+          console.log('Connected to MongoDB');
+          findPhoto(db,{},{_id:1,name:1},function(result) {
+          db.close();
+          console.log('Disconnected MongoDB');
+          console.log("session");
+          console.log(req.session);
+          res.status(200);
+          res.render("read", { 
+              userName: req.session.userName,
+              p:result
 
-        });
+          });
 
-        })
+          })
         });
     }
 });
@@ -164,11 +164,16 @@ app.get('/api/restaurant/read/:criteria/:value', function(req, res) {
         })
     });
 });
-//-----------------------------------
+//insert data
 app.get('/insert', function(req,res) {
   console.log("/insert");
-  res.status(200);
-  res.render("uploadtest");
+  var sessionn = req.session.userName;
+  if (!sessionn) {
+    res.redirect('/login');
+  }else{
+    res.status(200);
+    res.render("uploadtest", {_id : req.query._id});
+  }
 });
 
 
@@ -211,7 +216,7 @@ app.post('/create', function(req, res) {
     new_r['borough'] = borough;
     new_r['cuisine'] = cuisine;
     new_r['mimetype'] = req.files.photoToUpload.mimetype;
-    console.log("mimetype =" + mimetype);
+    //console.log("mimetype =" + mimetype);
     if (req.files.photoToUpload.mimetype) {
         new_r['image'] = new Buffer(req.files.photoToUpload.data).toString('base64');
     }
@@ -245,17 +250,22 @@ app.post('/create', function(req, res) {
 });
 
 app.get('/rate', function(req,res) {
-  console.log('/rate');
+    console.log('/rate');
+    var sessionn = req.session.userName;
+    if (!sessionn) {
+      res.redirect('/login');
+    }else{
       res.status(200);
       res.render("rating",{
-          _id : req.query._id
-                 
+          _id : req.query._id       
       });
+
+    }
   });
 
 app.post('/rating', function(req,res) {
-  console.log("/rating");
-        var criteria = {};
+      console.log("/rating");
+      var criteria = {};
       criteria['_id'] = ObjectID(req.query._id);
       console.log(criteria);
 
@@ -359,6 +369,10 @@ app.post('/rating', function(req,res) {
 //////////////////////
 app.get('/show', function(req,res) {
   console.log('/show');
+  var sessionn = req.session.userName;
+    if (!sessionn) {
+      res.redirect('/login');
+    }else{
   MongoClient.connect(mongourl, function(err,db) {
     assert.equal(err,null);
     console.log('Connected to MongoDB');
@@ -369,6 +383,7 @@ app.get('/show', function(req,res) {
       res.render("listtest",{p:result});
     })
   });
+}
 });
 
 app.get('/display', function(req,res) {
@@ -397,118 +412,116 @@ app.get('/delete', function(req, res) {
     var criteria = {};
     criteria['_id'] = ObjectID(req.query._id);
     console.log(criteria)
-   MongoClient.connect(mongourl, function(err,db) {
-    assert.equal(err,null);
-    console.log('Connected to MongoDB');
-    db.collection('restaurants').findOne(criteria, function(err,result){
-      console.log(result);
-       if(result.owner==req.session.userName){
-    db.collection('restaurants').remove(criteria, function(err){
-        if (err) {
-            console.log(err)
+    MongoClient.connect(mongourl, function(err,db) {
+      assert.equal(err,null);
+      console.log('Connected to MongoDB');
+      db.collection('restaurants').findOne(criteria, function(err,result){
+        console.log(result);
+        if(result.owner==req.session.userName){
+          db.collection('restaurants').remove(criteria, function(err){
+              if (err) {
+                  console.log(err)
+              }else {
+                 return res.send("Removed");
+              }
+          });
+        }else{
+          return res.send("You are not the creater");
         }
-        else {
-           return res.send("Removed");
-        }
+       });
     });
-       }
-else{return res.send("You are not the creater");}
-     });
-      });
 });
 
 
 ////change
 app.get('/edit', function(req,res) {
-        console.log('/edit');
-        var sessionn = req.session.userName;
-        if (!sessionn) {
-          res.redirect('/login');
-        } else {
-          MongoClient.connect(mongourl, function(err,db) {
-          assert.equal(err,null);
-          console.log('Connected to MongoDB');
-          var criteria = {};
-          criteria['_id'] = ObjectID(req.query._id);
-          //console.log(criteria);
-          db.collection('restaurants').findOne(criteria, function(err,result){
-            //console.log(result);
-            if(result.owner==req.session.userName){
+    console.log('/edit');
+    var sessionn = req.session.userName;
+    if (!sessionn) {
+      res.redirect('/login');
+    } else {
+      MongoClient.connect(mongourl, function(err,db) {
+        assert.equal(err,null);
+        console.log('Connected to MongoDB');
+        var criteria = {};
+        criteria['_id'] = ObjectID(req.query._id);
+        //console.log(criteria);
+        db.collection('restaurants').findOne(criteria, function(err,result){
+          //console.log(result);
+          if(result.owner==req.session.userName){
 
-              finddata(db,criteria,{},function(photo) {
+            finddata(db,criteria,{},function(photo) {
               db.close();
               console.log('Disconnected MongoDB');
-            
               res.status(200);
-              
                //console.log(photo.image);
               res.render("change",{
                   _id : req.query._id, p: photo
-
               });
 
-              });
-            }else{return res.send("You are not the owner");}
+            });
+          }else{
+            return res.send("You are not the owner");}
 
           });
         });
-      }
+    }
 
       
-      });
+});
 
   
 app.post('/change', function(req,res) {
-  console.log('/change');
-  MongoClient.connect(mongourl, function(err,db) {
-    assert.equal(err,null);
-    console.log('Connected to MongoDB');
-    var criteria = {};
-    criteria['_id'] = ObjectID(req.query._id);
-    //console.log(criteria);
-    if (!req.files.image) {
-        req.files.image = {};
-        req.files.image.name = "no.jpg";
-        console.log("No picture");
-    }
+    console.log('/change');
+    MongoClient.connect(mongourl, function(err,db) {
+      assert.equal(err,null);
+      console.log('Connected to MongoDB');
+      var criteria = {};
+      criteria['_id'] = ObjectID(req.query._id);
+      //console.log(criteria);
+      if (!req.files.image) {
+          req.files.image = {};
+          req.files.image.name = "no.jpg";
+          console.log("No picture");
+      }
 
-    var mimetype = (req.files.image.mimetype > 0) ? req.files.image.mimetype : "";
-    var v = {};
-    if (!req.body.name){
-          res.writeHead(200, {'Content-Type': 'text/html'});
-          res.write("<html><head>");
-          res.write("<title>Error</title>");
-          res.write("</head>");
-          res.write("<body>");
-          res.write("<H1>please enter your restaurant name</H1>");
-          res.write("<a href='/read'><button>Home</button></a>");
-          res.write("</body>")
-          res.end("</html>");
-    }else{
-      v['name']=req.body.name;
-    }
-    v['borough']=req.body.borough;
-    v['cuisine']=req.body.cuisine;
-    v['street']=req.body.street;
-    v['building']=req.body.building;
-    v['zipcode']=req.body.zipcode;
-    v['lon']=req.body.lon;
-    v['lat']=req.body.lat;
-    v['mimetype'] = req.files.image.mimetype;
-    if (req.files.image.mimetype){
-    v['image']=new Buffer(req.files.image.data).toString('base64');
-    }
-    console.log(JSON.stringify(v));
-    //console.log(req.body.image);
-    change(db, criteria, v, function(result) {
-      db.close();
-      console.log('Disconnected MongoDB');
-      res.status(200);
-      res.redirect('/read');
+      var mimetype = (req.files.image.mimetype > 0) ? req.files.image.mimetype : "";
+      var v = {};
+      if (!req.body.name){
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.write("<html><head>");
+            res.write("<title>Error</title>");
+            res.write("</head>");
+            res.write("<body>");
+            res.write("<H1>please enter your restaurant name</H1>");
+            res.write("<a href='/read'><button>Home</button></a>");
+            res.write("</body>")
+            res.end("</html>");
+      }else{
+        v['name']=req.body.name;
+      }
+      v['borough']=req.body.borough;
+      v['cuisine']=req.body.cuisine;
+      v['street']=req.body.street;
+      v['building']=req.body.building;
+      v['zipcode']=req.body.zipcode;
+      v['lon']=req.body.lon;
+      v['lat']=req.body.lat;
+      v['mimetype'] = req.files.image.mimetype;
+      if (req.files.image.mimetype){
+      v['image']=new Buffer(req.files.image.data).toString('base64');
+      }
+      //console.log(JSON.stringify(v));
+      //console.log(req.body.image);
+      change(db, criteria, v, function(result) {
+        db.close();
+        console.log('Disconnected MongoDB');
+        res.status(200);
+        res.redirect('/read');
+      });
+
+
     });
-
-
-  });
 });
 
 app.get('/search', function(req, res) {
@@ -517,28 +530,28 @@ app.get('/search', function(req, res) {
     if (!sessionn) {
         res.redirect('/login');
     } else {
-         var criteria = {};
-         for(key in req.query){
-      criteria[key] = req.query[key];
-         }
-          console.log(criteria);
+        var criteria = {};
+        for(key in req.query){
+          criteria[key] = req.query[key];
+        }
+        console.log(criteria);
 
-          MongoClient.connect(mongourl, function(err,db) {
-        assert.equal(err,null);
-        console.log('Connected to MongoDB');
-        findPhoto(db,criteria,{_id:1,name:1},function(result) {
-        db.close();
-        console.log('Disconnected MongoDB');
-        console.log("session");
-        console.log(req.session);
-        res.status(200);
-        res.render("searching", { 
-            userName: req.session.userName,
-            p:result
+        MongoClient.connect(mongourl, function(err,db) {
+          assert.equal(err,null);
+          console.log('Connected to MongoDB');
+          findPhoto(db,criteria,{_id:1,name:1},function(result) {
+          db.close();
+          console.log('Disconnected MongoDB');
+          console.log("session");
+          console.log(req.session);
+          res.status(200);
+          res.render("searching", { 
+              userName: req.session.userName,
+              p:result
 
-        });
+          });
 
-        })
+          })
         });
     }
 });
@@ -571,9 +584,9 @@ function change(db, criteria, edit_data, callback) {
             }
         },
         function(err, results) {
-            //console.log(JSON.stringify(results));
-            console.log(results);
-            callback();
+          //console.log(JSON.stringify(results));
+          console.log(results);
+          callback();
 
         });
 }
