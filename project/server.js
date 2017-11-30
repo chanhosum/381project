@@ -435,6 +435,50 @@ app.post('/change', function(req,res) {
   });
 });
 
+app.get('/search', function(req, res) {
+    console.log("/read");
+    var sessionn = req.session.userName;
+    if (!sessionn) {
+        res.redirect('/login');
+    } else {
+         var criteria = {};
+         for(key in req.query){
+      criteria[key] = req.query[key];
+         }
+          console.log(criteria);
+
+          MongoClient.connect(mongourl, function(err,db) {
+        assert.equal(err,null);
+        console.log('Connected to MongoDB');
+        findPhoto(db,criteria,{_id:1,name:1},function(result) {
+        db.close();
+        console.log('Disconnected MongoDB');
+        console.log("session");
+        console.log(req.session);
+        res.status(200);
+        res.render("searching", { 
+            userName: req.session.userName,
+            p:result
+
+        });
+
+        })
+        });
+    }
+});
+
+app.post('/searching', function(req, res) {
+    console.log("/read");
+    var sessionn = req.session.userName;
+    if (!sessionn) {
+        res.redirect('/login');
+    } else {
+        var searchcmd = "?"+req.body.criteria+"="+req.body.searchword;
+        res.redirect('/search'+searchcmd);
+    }
+});
+
+
 function change(db, criteria, edit_data, callback) {
     db.collection('restaurants').updateOne(
         criteria, {
