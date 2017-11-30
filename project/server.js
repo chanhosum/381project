@@ -374,6 +374,96 @@ else{return res.send("You are not the creater");}
 });
 
 
+////change
+app.get('/edit', function(req,res) {
+        console.log('/edit');
+        MongoClient.connect(mongourl, function(err,db) {
+        assert.equal(err,null);
+        console.log('Connected to MongoDB');
+        var criteria = {};
+        criteria['_id'] = ObjectID(req.query._id);
+        //console.log(criteria);
+
+        finddata(db,criteria,{},function(photo) {
+        db.close();
+        console.log('Disconnected MongoDB');
+      
+        res.status(200);
+        
+         //console.log(photo.image);
+        res.render("change",{
+            _id : req.query._id, p: photo
+
+        });
+      });
+      });
+      });
+
+  
+app.post('/change', function(req,res) {
+  console.log('/change');
+  MongoClient.connect(mongourl, function(err,db) {
+    assert.equal(err,null);
+    console.log('Connected to MongoDB');
+    var criteria = {};
+    criteria['_id'] = ObjectID(req.query._id);
+    //console.log(criteria);
+    var mimetype = (req.files.image.mimetype > 0) ? req.files.image.mimetype : "";
+    var v = {};
+    v['name']=req.body.name;
+    v['borough']=req.body.borough;
+    v['cuisine']=req.body.cuisine;
+    v['street']=req.body.street;
+    v['building']=req.body.building;
+    v['zipcode']=req.body.zipcode;
+    v['lon']=req.body.lon;
+    v['lat']=req.body.lat;
+    v['mimetype'] = req.files.image.mimetype;
+    if (req.files.image.mimetype){
+    v['image']=new Buffer(req.files.image.data).toString('base64');
+    }
+    console.log(JSON.stringify(v));
+    //console.log(req.body.image);
+    change(db, criteria, v, function(result) {
+      db.close();
+      console.log('Disconnected MongoDB');
+      res.status(200);
+      res.redirect('/read');
+    });
+
+
+  });
+});
+
+function change(db, criteria, edit_data, callback) {
+    db.collection('restaurants').updateOne(
+        criteria, {
+            $set: {
+                name: edit_data.name,
+                borough: edit_data.borough, 
+                cuisine: edit_data.cuisine,
+                "address.street": edit_data.street,
+                "address.building": edit_data.building,
+                "address.zipcode": edit_data.zipcode,
+                "address.lat": edit_data.lat, 
+                "address.lon": edit_data.lon,
+                image: edit_data.image
+            }
+        },
+        function(err, results) {
+            //console.log(JSON.stringify(results));
+            console.log(results);
+            callback();
+
+        });
+}
+
+function finddata(db,criteria,fields,callback) {
+  var cursor = db.collection("restaurants").findOne(criteria, function(err, result){
+    //console.log(result);
+    callback(result);
+  });
+}
 
 function findPhoto(db,criteria,fields,callback) {
   var cursor = db.collection("restaurants").find(criteria);

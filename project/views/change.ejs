@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <style>
+      img {
+         width: 100%;
+         height: auto;
+      }
+   </style>
+</head>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<form class="upload-form" method="post" action='/change?_id=<%=_id %>' enctype="multipart/form-data">
+Name: <input type="text" name="name" minlength=1 value=<%=p.name %>><br>
+
+Borough: <input type="text" name="borough" minlength=1 value=<%=p.borough %>><br>
+
+Cuisine: <input type="text" name="cuisine" minlength=1 value=<%=p.cuisine %>><br>
+
+Street: <input type="text" name="street" minlength=1 value=<%=p.address.street %>><br>
+
+Building: <input type="text" name="building" minlength=1 value=<%=p.address.building %>><br>
+
+Zipcode: <input type="text" name="zipcode" minlength=1 value=<%=p.address.zipcode %>><br>
+
+GPS Coordinates(lon.): <input type="text" name="lon" minlength=1 value=<%=p.address.lon %>><br>
+
+GPS Coordinates(lat.): <input type="text" name="lat" minlength=1 value=<%=p.address.lat %>><br>
+
+Photo: <input type="file" name="image" ><br>
+        <input type="submit">
+        </form>
+    </div>
+</html>

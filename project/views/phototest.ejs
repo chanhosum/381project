@@ -61,18 +61,18 @@
             <%= p.owner%>
         </h3>
         <h3>GPS: </h3>
-        <% if (p.lat && p.lon) { %>
-        <%=p.lon%>, <%=p.lat%>
+        <% if (p.address.lat && p.address.lon) { %>
+        <%=p.address.lon%>, <%=p.address.lat%>
         <h3>
-            <a href='https://www.google.com.hk/maps/@<%=p.lat%>,<%=p.lon%>,17z'>
+            <a href='https://www.google.com.hk/maps/@<%=p.address.lat%>,<%=p.address.lon%>,17z'>
                 google map
             </a>
         </h3>
         <% } %>
         <a href='/rate?_id=<%= p._id%>'><button>Rate</button></a>
-        <a href='/edit'><button>Edit</button></a>
+        <a href='/edit?_id=<%= p._id%>'><button>Edit</button></a>
         <a href='/delete?_id=<%= p._id%>'><button>Delete</button></a>
-         <a href='/read'><button>Go back</button></a>
+        <a href='/read'><button>Go back</button></a>
         
     </div>
 </html>
