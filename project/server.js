@@ -377,26 +377,40 @@ else{return res.send("You are not the creater");}
 ////change
 app.get('/edit', function(req,res) {
         console.log('/edit');
-        MongoClient.connect(mongourl, function(err,db) {
-        assert.equal(err,null);
-        console.log('Connected to MongoDB');
-        var criteria = {};
-        criteria['_id'] = ObjectID(req.query._id);
-        //console.log(criteria);
+        var sessionn = req.session.userName;
+        if (!sessionn) {
+          res.redirect('/login');
+        } else {
+          MongoClient.connect(mongourl, function(err,db) {
+          assert.equal(err,null);
+          console.log('Connected to MongoDB');
+          var criteria = {};
+          criteria['_id'] = ObjectID(req.query._id);
+          //console.log(criteria);
+          db.collection('restaurants').findOne(criteria, function(err,result){
+            //console.log(result);
+            if(result.owner==req.session.userName){
 
-        finddata(db,criteria,{},function(photo) {
-        db.close();
-        console.log('Disconnected MongoDB');
-      
-        res.status(200);
-        
-         //console.log(photo.image);
-        res.render("change",{
-            _id : req.query._id, p: photo
+              finddata(db,criteria,{},function(photo) {
+              db.close();
+              console.log('Disconnected MongoDB');
+            
+              res.status(200);
+              
+               //console.log(photo.image);
+              res.render("change",{
+                  _id : req.query._id, p: photo
 
+              });
+
+              });
+            }else{return res.send("You are not the owner");}
+
+          });
         });
-      });
-      });
+      }
+
+      
       });
 
   
@@ -408,9 +422,27 @@ app.post('/change', function(req,res) {
     var criteria = {};
     criteria['_id'] = ObjectID(req.query._id);
     //console.log(criteria);
+    if (!req.files.image) {
+        req.files.image = {};
+        req.files.image.name = "no.jpg";
+        console.log("No picture");
+    }
+
     var mimetype = (req.files.image.mimetype > 0) ? req.files.image.mimetype : "";
     var v = {};
-    v['name']=req.body.name;
+    if (!req.body.name){
+          res.writeHead(200, {'Content-Type': 'text/html'});
+          res.write("<html><head>");
+          res.write("<title>Error</title>");
+          res.write("</head>");
+          res.write("<body>");
+          res.write("<H1>please enter your restaurant name</H1>");
+          res.write("<a href='/read'><button>Home</button></a>");
+          res.write("</body>")
+          res.end("</html>");
+    }else{
+      v['name']=req.body.name;
+    }
     v['borough']=req.body.borough;
     v['cuisine']=req.body.cuisine;
     v['street']=req.body.street;
