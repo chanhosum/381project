@@ -203,7 +203,7 @@ app.post('/create', function(req, res) {
         if (req.body.street) address['street'] = req.body.street;
         if (req.body.zipcode) address['zipcode'] = req.body.zipcode;
         if (req.body.lon) address['lon'] = req.body.lon;
-        if (req.body.lan) address['lat'] = req.body.lat;
+        if (req.body.lat) address['lat'] = req.body.lat;
         new_r['address'] = address;
     }
     console.log("username =" + req.session.userName);
