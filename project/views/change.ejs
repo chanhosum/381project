@@ -18,16 +18,37 @@ Borough: <input type="text" name="borough" minlength=1 value=<%=p.borough %>><br
 
 Cuisine: <input type="text" name="cuisine" minlength=1 value=<%=p.cuisine %>><br>
 
-Street: <input type="text" name="street" minlength=1 value=<%=p.address.street %>><br>
+Street: <br>
+<% if (p.address){ %>
+<input type="text" name="street" minlength=1 value=<%=p.address.street %>><br>
+<% }else{%>
+  <input type="text" name="street" minlength=1 ><br>
+<%} %>
+Building: <br>
+<% if (p.address){ %>
+<input type="text" name="building" minlength=1 value=<%=p.address.building %>><br>
+<% }else{%>
+  <input type="text" name="building" minlength=1 ><br>
+<%} %>
 
-Building: <input type="text" name="building" minlength=1 value=<%=p.address.building %>><br>
+Zipcode:<br>
+<% if (p.address){ %>
+ <input type="text" name="zipcode" minlength=1 value=<%=p.address.zipcode %>><br>
+<% }else{%>
+  <input type="text" name="zipcode" minlength=1 ><br>
+<%} %>
+GPS Coordinates(lon.): <br>
+<% if (p.address){ %><input type="text" name="lon" minlength=1 value=<%=p.address.lon %>><br>
+<% }else{%>
+  <input type="text" name="lon" minlength=1 ><br>
+<%} %>
 
-Zipcode: <input type="text" name="zipcode" minlength=1 value=<%=p.address.zipcode %>><br>
-
-GPS Coordinates(lon.): <input type="text" name="lon" minlength=1 value=<%=p.address.lon %>><br>
-
-GPS Coordinates(lat.): <input type="text" name="lat" minlength=1 value=<%=p.address.lat %>><br>
-
+GPS Coordinates(lat.): <br>
+<% if (p.address){ %>
+<input type="text" name="lat" minlength=1 value=<%=p.address.lat %>><br>
+<% }else{%>
+  <input type="text" name="lat" minlength=1 ><br>
+<%} %>
 Photo: <input type="file" name="image" ><br>
         <input type="submit">
         </form>

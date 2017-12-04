@@ -216,9 +216,12 @@ app.post('/create', function(req, res) {
     new_r['borough'] = borough;
     new_r['cuisine'] = cuisine;
     new_r['mimetype'] = req.files.photoToUpload.mimetype;
+
     //console.log("mimetype =" + mimetype);
     if (req.files.photoToUpload.mimetype) {
+      if (req.files.photoToUpload.mimetype.includes("image")) {
         new_r['image'] = new Buffer(req.files.photoToUpload.data).toString('base64');
+      }
     }
     new_r['lat'] = lat;
     new_r['lon'] = lon;
